@@ -24,14 +24,9 @@ public class QAService {
 
     private static final Logger logger = LoggerFactory.getLogger(QAService.class);
 
-    @Value("classpath:/prompts/system-qa.st")
+    @Value("classpath:/prompts/prompt-template.st")
     private Resource qaSystemPromptResource;
-
-    @Value("classpath:/prompts/system-chatbot.st")
-    private Resource chatbotSystemPromptResource;
-
     private final ChatClient chatClient;
-
     private final VectorStore vectorStore;
 
     @Autowired
@@ -40,28 +35,22 @@ public class QAService {
         this.vectorStore = vectorStore;
     }
 
-    public String generate(String message, boolean stuffit) {
-        Message systemMessage = getSystemMessage(message, stuffit);
+    public String generate(String message) {
+        Message systemMessage = getSystemMessage(message);
         UserMessage userMessage = new UserMessage(message);
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
-
         logger.info("Asking AI model to reply to question.");
         ChatResponse chatResponse = chatClient.call(prompt);
         logger.info("AI responded.");
         return chatResponse.getResult().getOutput().getContent();
     }
 
-    private Message getSystemMessage(String query, boolean stuffit) {
-        if (stuffit) {
+    private Message getSystemMessage(String query) {
             logger.info("Retrieving relevant documents");
             List<Document> similarDocuments = vectorStore.similaritySearch(query);
             logger.info(String.format("Found %s relevant documents.", similarDocuments.size()));
-            String documents = similarDocuments.stream().map(entry -> entry.getContent()).collect(Collectors.joining("\n"));
+            String documents = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
             SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.qaSystemPromptResource);
             return systemPromptTemplate.createMessage(Map.of("documents", documents));
-        } else {
-            logger.info("Not stuffing the prompt, using generic prompt");
-            return new SystemPromptTemplate(this.chatbotSystemPromptResource).createMessage();
-        }
     }
 }

@@ -21,9 +21,8 @@ public class QAController {
     }
 
     @GetMapping
-    public Map completion(@RequestParam(value = "question", defaultValue = "What is the purpose of Carina?") String question,
-                          @RequestParam(value = "stuffit", defaultValue = "true") boolean stuffit) {
-        String answer = this.qaService.generate(question, stuffit);
+    public Map completion(@RequestParam(value = "question") String question) {
+        String answer = this.qaService.generate(question);
         Map map = new LinkedHashMap();
         map.put("question", question);
         map.put("answer", answer);
