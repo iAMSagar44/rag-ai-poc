@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/vector_store
+    username: postgres
+    password: postgres
+  ai:
+    openai:
+      temperature: 0.3
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
+      model: gpt-3.5-turbo
+      embedding-api-key: ${SPRING_AI_OPENAI_API_KEY}
+      embedding:
+        options:
+          model: text-embedding-ada-002
+      base-url: https://api.openai.com/
