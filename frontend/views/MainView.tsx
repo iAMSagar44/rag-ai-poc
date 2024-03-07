@@ -1,28 +1,60 @@
-import { Button } from "@hilla/react-components/Button.js";
-import { Notification } from "@hilla/react-components/Notification.js";
-import { TextField } from "@hilla/react-components/TextField.js";
-import {QAService} from "Frontend/generated/endpoints.js";
+import {MessageInput} from "@hilla/react-components/MessageInput";
+import {AppLayout} from "@hilla/react-components/AppLayout";
+import {MessageList, MessageListItem} from "@hilla/react-components/MessageList";
 import {StreamingChatService} from "Frontend/generated/endpoints.js";
 import { useState } from "react";
 
 export default function MainView() {
-  const [message, setMessage] = useState("");
-  return (
-    <>
-      <TextField
-        label="Your message"
-        onValueChanged={(e) => {
-          setMessage(e.detail.value);
-        }}
-      />
-      <Button
-        onClick={async () => {
-          const serverResponse : any = await StreamingChatService.streamChat(message);
-          Notification.show(serverResponse);
-        }}
-      >
-        Say hello
-      </Button>
-    </>
-  );
+  const [messages, setMessages] = useState<MessageListItem[]>([]);
+
+    function addMessage(message: MessageListItem) {
+        setMessages(messages => [...messages, message])
+    }
+
+    function appendToLastMessage(textChunk: string | any) {
+        setMessages(messages => {
+            const lastMessage = messages[messages.length - 1];
+            lastMessage.text += textChunk;
+            return [...messages.slice(0, -1), lastMessage];
+        })
+
+    }
+
+    async function sendMessage(message: string) {
+        addMessage({
+            text: message,
+            userName: 'You',
+            userColorIndex: 1
+        });
+
+        let first = true;
+        StreamingChatService.streamChat(message)
+            .onNext(textChunk => {
+                if (first && textChunk) {
+                    addMessage({
+                        text: message,
+                        userName: 'Assistant',
+                        userColorIndex: 2
+                    });
+                    first = false;
+                } else {
+                    appendToLastMessage(textChunk);
+                }
+            })
+        
+    }
+
+    return (
+        <AppLayout>
+
+                <header className="flex flex-col gap-m">
+                    <h1 className="text-l m-0">AI Chat 🤖</h1>
+                    <div className="p-m flex flex-col h-full box-border">
+                        <MessageList items={messages} className="flex-grow"/>
+                        <MessageInput onSubmit={e => sendMessage(e.detail.value)}/>
+                    </div>
+                </header>
+
+        </AppLayout>
+);
 }
