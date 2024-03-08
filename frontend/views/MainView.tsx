@@ -28,7 +28,7 @@ export default function MainView() {
         });
 
         let first = true;
-        StreamingChatService.streamChat(message)
+        StreamingChatService.generateResponse(message)
             .onNext(textChunk => {
                 if (first && textChunk) {
                     addMessage({
