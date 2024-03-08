@@ -32,7 +32,7 @@ export default function MainView() {
             .onNext(textChunk => {
                 if (first && textChunk) {
                     addMessage({
-                        text: message,
+                        text: textChunk,
                         userName: 'Assistant',
                         userColorIndex: 2
                     });
