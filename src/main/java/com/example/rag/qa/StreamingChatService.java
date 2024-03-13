@@ -12,6 +12,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -37,7 +38,7 @@ public class StreamingChatService {
         this.vectorStore = vectorStore;
     }
 
-      public Flux<String> streamChat(String message) {
+    public Flux<String> streamChat(String message) {
         Flux<ChatResponse> chatResponseFlux = chatClient.stream(new Prompt(message));
         Flux<String> stringFlux = chatResponseFlux.map(chatResponse -> chatResponse.getResult().getOutput().getContent())
                 .onBackpressureBuffer()
@@ -48,6 +49,7 @@ public class StreamingChatService {
 
     public Flux<String> generateResponse(String message) {
         Message systemMessage = generateSystemMessage(message);
+        //LOGGER.info("The system prompt is -- {}", systemMessage.getContent());
         UserMessage userMessage = new UserMessage(message);
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
         return chatClient.stream(prompt)
@@ -58,10 +60,15 @@ public class StreamingChatService {
 
     private Message generateSystemMessage(String message) {
         LOGGER.info("Retrieving documents");
-        List<Document> similarDocuments = vectorStore.similaritySearch(message);
+        List<Document> similarDocuments = vectorStore
+                .similaritySearch(SearchRequest.query(message)
+                .withTopK(2).withSimilarityThreshold(0.75));
         LOGGER.info("Found {} similar documents", similarDocuments.size());
-        String documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.systemPromptResource);
+        if(similarDocuments.isEmpty()) {
+            return systemPromptTemplate.createMessage(Map.of("documents", "No information found"));
+        }
+        String documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
         return systemPromptTemplate.createMessage(Map.of("documents", documentContent));
     }
 }

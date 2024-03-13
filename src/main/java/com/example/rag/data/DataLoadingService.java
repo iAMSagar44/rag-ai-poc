@@ -20,7 +20,7 @@ import java.io.IOException;
 public class DataLoadingService {
     private static final Logger logger = LoggerFactory.getLogger(DataLoadingService.class);
 
-    @Value("file://${Home}/Downloads/A1.1_Grammer.pdf")
+    @Value("file://${Home}/Downloads/AZ-204.pdf")
     private Resource pdfResource;
 
     private final VectorStore vectorStore;
