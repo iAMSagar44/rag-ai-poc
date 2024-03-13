@@ -29,6 +29,8 @@ langchain4j:
       model-name: gpt-3.5-turbo
       log-requests: true
       log-responses: true
+    embedding-model:
+      model-name: text-embedding-ada-002
 
 #Logging properties
 logging:
