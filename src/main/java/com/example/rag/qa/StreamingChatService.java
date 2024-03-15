@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.ChatResponse;
 import org.springframework.ai.chat.StreamingChatClient;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
@@ -31,6 +32,9 @@ public class StreamingChatService {
 
     @Value("classpath:/prompts/prompt-template.st")
     private Resource systemPromptResource;
+
+    @Value("classpath:/prompts/no-info-prompt-template.st")
+    private Resource emptyPromptResource;
     private final VectorStore vectorStore;
 
     public StreamingChatService(StreamingChatClient chatClient, VectorStore vectorStore) {
@@ -48,7 +52,7 @@ public class StreamingChatService {
     }
 
     public Flux<String> generateResponse(String message) {
-        Message systemMessage = generateSystemMessage(message);
+        SystemMessage systemMessage = generateSystemMessage(message);
         //LOGGER.info("The system prompt is -- {}", systemMessage.getContent());
         UserMessage userMessage = new UserMessage(message);
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
@@ -58,17 +62,19 @@ public class StreamingChatService {
                 .onErrorComplete();
     }
 
-    private Message generateSystemMessage(String message) {
+    private SystemMessage generateSystemMessage(String message) {
         LOGGER.info("Retrieving documents");
         List<Document> similarDocuments = vectorStore
                 .similaritySearch(SearchRequest.query(message)
                 .withTopK(2).withSimilarityThreshold(0.75));
         LOGGER.info("Found {} similar documents", similarDocuments.size());
-        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.systemPromptResource);
         if(similarDocuments.isEmpty()) {
-            return systemPromptTemplate.createMessage(Map.of("documents", "No information found"));
+            SystemPromptTemplate emptyPromptTemplate = new SystemPromptTemplate(this.emptyPromptResource);
+            return (SystemMessage) emptyPromptTemplate.createMessage(Map.of("message",
+                    String.format("No information found in the documents for the following question - %s", message)));
         }
+        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.systemPromptResource);
         String documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
-        return systemPromptTemplate.createMessage(Map.of("documents", documentContent));
+        return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent));
     }
 }
