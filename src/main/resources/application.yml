@@ -30,6 +30,7 @@ langchain4j:
       log-requests: true
       log-responses: true
     embedding-model:
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
       model-name: text-embedding-ada-002
 
 #Logging properties

@@ -16,8 +16,6 @@ import org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
-
 @Configuration
 public class AIAssitant {
 
@@ -52,15 +50,20 @@ public class AIAssitant {
 
     @Bean
     EmbeddingStore<TextSegment> embeddingStore(JdbcConnectionDetails jdbcConnectionDetails){
-        return PgVectorEmbeddingStore.builder()
-                .host("localhost")
-                .port(5432)
-                .user(jdbcConnectionDetails.getUsername())
-                .password(jdbcConnectionDetails.getPassword())
-                .database("vector_store")
-                .table("vector_store")
-                .dimension(1536)
-                .build();
+        String userName = jdbcConnectionDetails.getUsername();
+        String password = jdbcConnectionDetails.getPassword();
+        return new CustomPgVectorEmbeddingStore("localhost", 5432, userName, password,
+                "vector_store", "vector_store");
+
+//        return PgVectorEmbeddingStore.builder()
+//                .host("localhost")
+//                .port(5432)
+//                .user(jdbcConnectionDetails.getUsername())
+//                .password(jdbcConnectionDetails.getPassword())
+//                .database("vector_store")
+//                .table("vector_store_2")
+//                .dimension(1536)
+//                .build();
     }
 
 }

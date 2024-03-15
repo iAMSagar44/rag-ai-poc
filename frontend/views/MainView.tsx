@@ -2,6 +2,7 @@ import {MessageInput} from "@hilla/react-components/MessageInput";
 import {AppLayout} from "@hilla/react-components/AppLayout";
 import {MessageList, MessageListItem} from "@hilla/react-components/MessageList";
 import {StreamingChatService} from "Frontend/generated/endpoints.js";
+import {StreamingSupportService} from "Frontend/generated/endpoints.js";
 import { useState } from "react";
 
 export default function MainView() {
@@ -28,7 +29,7 @@ export default function MainView() {
         });
 
         let first = true;
-        StreamingChatService.generateResponse(message)
+        StreamingSupportService.streamChat(message)
             .onNext(textChunk => {
                 if (first && textChunk) {
                     addMessage({
