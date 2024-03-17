@@ -3,6 +3,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/vector_store
     username: postgres
     password: postgres
+    ###################
+    # OpenAI specific properties
+    ###################
   ai:
     openai:
       api-key: ${SPRING_AI_OPENAI_API_KEY}
