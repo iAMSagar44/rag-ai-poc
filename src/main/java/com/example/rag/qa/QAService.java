@@ -1,5 +1,7 @@
 package com.example.rag.qa;
 
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import dev.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.ChatClient;
@@ -19,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+@Endpoint
+@AnonymousAllowed
 @Service
 public class QAService {
 
@@ -52,5 +57,9 @@ public class QAService {
             String documents = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
             SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.qaSystemPromptResource);
             return systemPromptTemplate.createMessage(Map.of("documents", documents));
+    }
+
+    public String openChat(String message) {
+        return chatClient.call(message);
     }
 }
