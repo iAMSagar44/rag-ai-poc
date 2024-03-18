@@ -16,6 +16,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import reactor.core.publisher.Flux;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Endpoint
 @AnonymousAllowed
+@Profile("openai")
 public class StreamingChatService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamingChatService.class);
     private final StreamingChatClient chatClient;
