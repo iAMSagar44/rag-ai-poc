@@ -18,3 +18,9 @@ spring:
         options:
           temperature: 0.2
           model: gpt-3.5-turbo
+    azure:
+      openai:
+        embedding:
+          enabled: false
+        chat:
+          enabled: false

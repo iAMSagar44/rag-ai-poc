@@ -1,8 +1,27 @@
-###################
-# Azure Open AI specific properties
-###################
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/vector_store
     username: postgres
     password: postgres
+    ###################
+    # Azure Open AI specific properties
+    ###################
+  ai:
+    azure:
+      openai:
+        api-key: ${SPRING_AI_AZURE_OPENAI_API_KEY}
+        endpoint: ${SPRING_AI_AZURE_OPENAI_ENDPOINT}
+        chat:
+          options:
+            deployment-name: azure-rag-poc
+        embedding:
+          enabled: false
+    openai:
+      embedding:
+        api-key: ${SPRING_AI_OPENAI_API_KEY}
+        enabled: true
+        options:
+          model: text-embedding-ada-002
+        base-url: https://api.openai.com/
+      chat:
+        enabled: false
