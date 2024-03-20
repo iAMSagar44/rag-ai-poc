@@ -15,13 +15,5 @@ spring:
           options:
             deployment-name: azure-rag-poc
         embedding:
-          enabled: false
-    openai:
-      embedding:
-        api-key: ${SPRING_AI_OPENAI_API_KEY}
-        enabled: true
-        options:
-          model: text-embedding-ada-002
-        base-url: https://api.openai.com/
-      chat:
-        enabled: false
+          options:
+            deployment-name: text-embedding-ada-002

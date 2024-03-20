@@ -12,7 +12,7 @@
 	<artifactId>rag-poc</artifactId>
 	<version>0.1.0</version>
 	<name>rag-poc</name>
-	<description>Simple AI Application using OpenAPI Service for RAG</description>
+	<description>Simple AI Application using Azure Open AI Services for RAG</description>
 	<properties>
 		<java.version>21</java.version>
 		<spring-ai.version>0.8.1</spring-ai.version>
@@ -26,12 +26,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<!--Open AI Dependency-->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-openai-spring-boot-starter</artifactId>
 		</dependency>
 		<!--Azure Open AI Dependency-->
 		<dependency>
