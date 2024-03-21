@@ -9,7 +9,6 @@ import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -18,7 +17,6 @@ import java.io.IOException;
 
 
 @Service
-@Profile("openai")
 public class DataLoadingService {
     private static final Logger logger = LoggerFactory.getLogger(DataLoadingService.class);
 
@@ -48,7 +46,7 @@ public class DataLoadingService {
 
         var tokenTextSplitter = new TokenTextSplitter();
 
-        logger.info("Parsing document, splitting, creating embeddings and storing in vector store...  this will take a while.");
+        logger.info("Parsing document, splitting, creating embeddings and storing in vector store. This will take a while....");
         this.vectorStore.accept(
                 tokenTextSplitter.apply(
                         pdfReader.get()));
