@@ -1,3 +1,5 @@
+#Local environment set up - using Postgres vector database and Azure Open AI
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/vector_store
