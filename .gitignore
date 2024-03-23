@@ -34,7 +34,7 @@ build/
 
 ### App related ###
 README.md
-
+README_local.md
 # The following files are generated/updated by Hilla
 node_modules/
 frontend/generated/
