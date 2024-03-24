@@ -1,0 +1,18 @@
+#Local environment set up - using Azure AI Search vector database and Azure Open AI
+
+spring:
+  ai:
+    azure:
+      openai:
+        api-key: ${SPRING_AI_AZURE_OPENAI_API_KEY}
+        endpoint: ${SPRING_AI_AZURE_OPENAI_ENDPOINT}
+        chat:
+          options:
+            deployment-name: azure-rag-search-poc
+        embedding:
+          options:
+            deployment-name: text-embedding-ada-002
+    vectorstore:
+      azure:
+        url: ${AZURE_AI_SEARCH_ENDPOINT}
+        api-key: ${AZURE_AI_SEARCH_API_KEY}

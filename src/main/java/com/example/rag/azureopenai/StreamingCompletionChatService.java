@@ -12,6 +12,7 @@ import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Endpoint
 @AnonymousAllowed
-@Profile("azureopenai")
 public class StreamingCompletionChatService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamingCompletionChatService.class);
     private final StreamingChatClient azureChatClient;
@@ -34,6 +34,7 @@ public class StreamingCompletionChatService {
     @Value("classpath:/prompts/prompt-template.st")
     private Resource systemPromptResource;
 
+    @Autowired
     public StreamingCompletionChatService(StreamingChatClient azureChatClient, VectorStore vectorStore) {
         this.azureChatClient = azureChatClient;
         this.vectorStore = vectorStore;
@@ -60,8 +61,7 @@ public class StreamingCompletionChatService {
     private SystemMessage generateSystemMessage(String message) {
         LOGGER.info("Retrieving documents");
         List<Document> similarDocuments = vectorStore
-                .similaritySearch(SearchRequest.query(message)
-                        .withTopK(2).withSimilarityThreshold(0.75));
+                .similaritySearch(SearchRequest.query(message));
         LOGGER.info("Found {} similar documents", similarDocuments.size());
         if(similarDocuments.isEmpty()) {
             SystemPromptTemplate emptyPromptTemplate = new SystemPromptTemplate(this.emptyPromptResource);
