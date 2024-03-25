@@ -48,7 +48,7 @@ export default function MainView() {
         <AppLayout>
 
                 <header className="flex flex-col gap-m">
-                    <h1 className="text-l m-0">AI Chat 🤖</h1>
+                    <h1 className="text-l m-0">RAG Demo with Azure Open AI and Azure AI Search</h1>
                     <div className="p-m flex flex-col h-full box-border">
                         <MessageList items={messages} className="flex-grow"/>
                         <MessageInput onSubmit={e => sendMessage(e.detail.value)}/>
