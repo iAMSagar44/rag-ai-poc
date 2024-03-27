@@ -3,5 +3,10 @@ Use the information from the DOCUMENTS section to provide accurate and detailed 
 isn't found in the DOCUMENTS section, simply state that you don't know the answer.
 Respond with "No relevant information found." if no relevant information were found from the DOCUMENTS section.
 
+After answering the question, provide the names of the files that was referred to. Use REFERENCES section below to provide details of the file names.
+
 DOCUMENTS:
 {documents}
+
+REFERENCES:
+{fileNames}

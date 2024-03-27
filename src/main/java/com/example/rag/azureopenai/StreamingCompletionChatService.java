@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Endpoint
@@ -70,6 +71,9 @@ public class StreamingCompletionChatService {
         }
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.systemPromptResource);
         String documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
-        return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent));
+        Set<String> collect = similarDocuments.stream().map(Document::getMetadata).map(m -> (String)m.get("file_name")).collect(Collectors.toSet());
+        String fileNames = String.join(",", collect);
+        //LOGGER.info("The file names are -> {}", fileNames);
+        return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent, "fileNames", fileNames));
     }
 }
