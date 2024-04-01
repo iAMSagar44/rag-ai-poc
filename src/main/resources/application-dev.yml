@@ -16,3 +16,4 @@ spring:
       azure:
         url: ${AZURE_AI_SEARCH_ENDPOINT}
         api-key: ${AZURE_AI_SEARCH_API_KEY}
+        index-name: ${AZURE_AI_SEARCH_INDEX_NAME}
