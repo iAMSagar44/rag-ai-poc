@@ -4,7 +4,7 @@ variable "resource_group_location" {
   default     = "australiaeast"
 }
 
-variable "resource_group_name" {
+variable "RG" {
   type        = string
   description = "Name of the existing resource group"
 }
@@ -23,6 +23,7 @@ variable "sku" {
     condition     = contains(["free", "basic"], var.sku)
     error_message = "The sku must be one of the following values for PoC purposes: free or basic"
   }
+  default = "basic"
 }
 
 variable "replica_count" {

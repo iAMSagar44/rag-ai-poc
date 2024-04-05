@@ -4,23 +4,33 @@ variable "resource_group_location" {
   default     = "australiaeast"
 }
 
-variable "resource_group_name" {
+variable "RG" {
   type        = string
   description = "Name of the existing resource group"
 }
 
-variable "SPRING_AI_AZURE_OPENAI_API_KEY" {
+variable "APP" {
   type        = string
+  description = "Name of the web app service name"
+}
+
+variable "APP_SERVICE_PLAN" {
+  type        = string
+  description = "Name of the app service plan"
+}
+
+variable "SPRING_AI_AZURE_OPENAI_API_KEY" {
+  type = string
 }
 
 variable "SPRING_AI_AZURE_OPENAI_ENDPOINT" {
-  type        = string
+  type = string
 }
 
 variable "AZURE_AI_SEARCH_API_KEY" {
-  type        = string
+  type = string
 }
 
 variable "AZURE_AI_SEARCH_ENDPOINT" {
-  type        = string
+  type = string
 }

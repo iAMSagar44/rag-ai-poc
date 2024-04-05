@@ -3,9 +3,9 @@ data "azurerm_client_config" "current" {
 }
 
 resource "azurerm_service_plan" "appserviceplan" {
-  name                = "rag-appplan-rs"
+  name                = var.APP_SERVICE_PLAN
   location            = var.resource_group_location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.RG
   os_type             = "Linux"
   sku_name            = "B1"
   tags = {
@@ -16,8 +16,8 @@ resource "azurerm_service_plan" "appserviceplan" {
 
 #Create the back-end app, pass in the App Service Plan ID
 resource "azurerm_linux_web_app" "backendapp" {
-  name                = "rag-backendapp-rs"
-  resource_group_name = var.resource_group_name
+  name                = var.APP
+  resource_group_name = var.RG
   location            = var.resource_group_location
   service_plan_id     = azurerm_service_plan.appserviceplan.id
   https_only          = true

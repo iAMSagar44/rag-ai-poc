@@ -2,7 +2,7 @@
 resource "azurerm_key_vault" "kv_account_01" {
   location            = var.resource_group_location
   name                = "rag-key-vault-01-rs"
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.RG
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.current.tenant_id
   tags = {
