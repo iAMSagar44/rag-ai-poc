@@ -1,4 +1,4 @@
-package com.example.rag.data;
+package com.example.rag.langchain4j.data;
 
 
 import org.slf4j.Logger;
@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +37,7 @@ public class DataController {
 
     @GetMapping("/count")
     public int count() {
-        String sql = "SELECT COUNT(*) FROM vector_store";
+        String sql = "SELECT COUNT(*) FROM vector_store_2";
         Integer count = jdbcClient.sql(sql).query(Integer.class).single();
         LOGGER.info("The count is :: {}", count);
         return count;
@@ -46,7 +45,7 @@ public class DataController {
 
     @PostMapping("/delete")
     public void delete() {
-        String sql = "DELETE FROM vector_store";
+        String sql = "DELETE FROM vector_store_2";
         jdbcClient.sql(sql).update();
     }
 

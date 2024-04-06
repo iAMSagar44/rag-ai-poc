@@ -1,9 +1,11 @@
-package com.example.rag.langchain4j.messagespecs;
+package com.example.rag.langchain4j.configuration;
 
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.spring.AiService;
 
+@AiService
 public interface StreamingSupportAgent {
     @SystemMessage("""
            You are a helpful assistant, conversing with a user about the subjects contained in a set of documents.

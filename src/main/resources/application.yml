@@ -3,27 +3,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/vector_store
     username: postgres
     password: postgres
-  ai:
-    openai:
-      api-key: ${SPRING_AI_OPENAI_API_KEY}
-      embedding-api-key: ${SPRING_AI_OPENAI_API_KEY}
-      embedding:
-        options:
-          model: text-embedding-ada-002
-      base-url: https://api.openai.com/
-      chat:
-        options:
-          temperature: 0.3
-          model: gpt-3.5-turbo
 
 #Langchain4j specific properties
 langchain4j:
   open-ai:
-    chat-model:
-      api-key: ${SPRING_AI_OPENAI_API_KEY}
-      model-name: gpt-3.5-turbo
-      log-requests: true
-      log-responses: true
     streaming-chat-model:
       api-key: ${SPRING_AI_OPENAI_API_KEY}
       model-name: gpt-3.5-turbo

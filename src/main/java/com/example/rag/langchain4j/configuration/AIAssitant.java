@@ -1,10 +1,11 @@
 package com.example.rag.langchain4j.configuration;
 
-import com.example.rag.langchain4j.messagespecs.StreamingSupportAgent;
-import com.example.rag.langchain4j.messagespecs.SupportAgent;
+
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.memory.chat.TokenWindowChatMemory;
+import dev.langchain4j.model.Tokenizer;
 import dev.langchain4j.model.chat.StreamingChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
@@ -19,22 +20,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AIAssitant {
 
-    @Bean
-    public SupportAgent supportAgent(ChatLanguageModel chatLanguageModel){
-        return AiServices.builder(SupportAgent.class)
-                .chatLanguageModel(chatLanguageModel)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(10))
-                .build();
-    }
+//    @Bean
+//    public StreamingSupportAgent streamingSupportAgent(StreamingChatLanguageModel streamingChatLanguageModel,
+//                                                       ContentRetriever contentRetriever){
+//        return AiServices.builder(StreamingSupportAgent.class)
+//                .streamingChatLanguageModel(streamingChatLanguageModel)
+//                .chatMemory(MessageWindowChatMemory.withMaxMessages(10))
+//                .contentRetriever(contentRetriever)
+//                .build();
+//    }
 
     @Bean
-    public StreamingSupportAgent streamingSupportAgent(StreamingChatLanguageModel streamingChatLanguageModel,
-                                                       ContentRetriever contentRetriever){
-        return AiServices.builder(StreamingSupportAgent.class)
-                .streamingChatLanguageModel(streamingChatLanguageModel)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(10))
-                .contentRetriever(contentRetriever)
-                .build();
+    ChatMemory chatMemory(Tokenizer tokenizer) {
+        return TokenWindowChatMemory.withMaxTokens(1000, tokenizer);
     }
 
     @Bean
@@ -44,7 +42,7 @@ public class AIAssitant {
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
                 .minScore(0.6)
-                .maxResults(2)
+                .maxResults(4)
                 .build();
     }
 
@@ -52,18 +50,18 @@ public class AIAssitant {
     EmbeddingStore<TextSegment> embeddingStore(JdbcConnectionDetails jdbcConnectionDetails){
         String userName = jdbcConnectionDetails.getUsername();
         String password = jdbcConnectionDetails.getPassword();
-        return new CustomPgVectorEmbeddingStore("localhost", 5432, userName, password,
-                "vector_store", "vector_store");
+//        return new CustomPgVectorEmbeddingStore("localhost", 5432, userName, password,
+//                "vector_store", "vector_store");
 
-//        return PgVectorEmbeddingStore.builder()
-//                .host("localhost")
-//                .port(5432)
-//                .user(jdbcConnectionDetails.getUsername())
-//                .password(jdbcConnectionDetails.getPassword())
-//                .database("vector_store")
-//                .table("vector_store_2")
-//                .dimension(1536)
-//                .build();
+        return PgVectorEmbeddingStore.builder()
+                .host("localhost")
+                .port(5432)
+                .user(jdbcConnectionDetails.getUsername())
+                .password(jdbcConnectionDetails.getPassword())
+                .database("vector_store")
+                .table("vector_store_2")
+                .dimension(1536)
+                .build();
     }
 
 }

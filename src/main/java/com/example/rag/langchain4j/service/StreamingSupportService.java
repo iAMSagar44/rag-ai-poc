@@ -1,6 +1,6 @@
 package com.example.rag.langchain4j.service;
 
-import com.example.rag.langchain4j.messagespecs.StreamingSupportAgent;
+import com.example.rag.langchain4j.configuration.StreamingSupportAgent;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.hilla.Endpoint;
 import org.slf4j.Logger;
