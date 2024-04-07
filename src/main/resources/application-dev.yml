@@ -17,3 +17,6 @@ spring:
         url: ${AZURE_AI_SEARCH_ENDPOINT}
         api-key: ${AZURE_AI_SEARCH_API_KEY}
         index-name: ${AZURE_AI_SEARCH_INDEX_NAME}
+logging:
+  level:
+    reactor.netty.http.client: INFO
