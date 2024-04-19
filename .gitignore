@@ -45,3 +45,4 @@ vite.generated.ts
 /infra/terraform.tfstate
 /infra/terraform.tfstate.backup
 /infra/tfplan
+/infra/env_vars.sh
