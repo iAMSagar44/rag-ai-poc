@@ -20,4 +20,4 @@ spring:
 logging:
   level:
     reactor.netty.http.client: INFO
-    com.example.rag.azureopenai: DEBUG
+    com.example.rag.azureopenai: INFO

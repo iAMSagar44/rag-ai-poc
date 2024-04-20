@@ -2,98 +2,67 @@ package com.example.rag.azureopenai;
 
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 /**
- * Simple, in memory, message chat history.
- *
- * @author Christian Tzolov
+ * Simple, in memory, message chat history built specific for Azure Open AI implementation.
+ * This is based of an example provided by Christian Tzolov, that was specific for Open AI.
+ * https://github.com/spring-projects/spring-ai/issues/396
  */
 
 @Service
-public class ChatHistory {
+public class InMemChatHistory {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatHistory.class);
+    private static final Logger logger = LoggerFactory.getLogger(InMemChatHistory.class);
 
     private final Map<String, List<Message>> chatHistoryLog;
 
     /**
      * Temporal storage used to aggregate streaming messages until the finishReason=STOP is received.
      */
-    private final Map<String, List<Message>> messageAggregations;
+    private final Map<UUID, List<Message>> messageAggregations;
 
-    public ChatHistory() {
+    public InMemChatHistory() {
         this.chatHistoryLog = new ConcurrentHashMap<>();
         this.messageAggregations = new ConcurrentHashMap<>();
     }
 
-    /**
-     * Messages are grouped by chatId and messageId. The streaming messages are aggregated until the finishReason=STOP
-     * is received. Then the aggregations are collapsed in to a single assistant message. The user messages are
-     * committed to the history as is.
-     *
-     * @param chatId the chat id
-     * @param message the message to add
-     */
-    public void addMessage(String chatId, Message message) {
+    public void addUserMessage(String chatId, Message message) {
+        this.commitToHistoryLog(chatId, message);
+    }
 
-        String groupId = toGroupId(chatId, message);
-
-        this.messageAggregations.putIfAbsent(groupId, new ArrayList<>());
-
+    public void addAssistantMessage(String chatId, Message message, String finishReason, UUID uuid) {
+        this.messageAggregations.putIfAbsent(uuid, new ArrayList<>());
         if (this.messageAggregations.keySet().size() > 1) {
             logger.warn("Multiple active sessions: " + this.messageAggregations.keySet());
         }
-
-        this.messageAggregations.get(groupId).add(message);
-
-        String finish = getProperty(message, "finishReason");
-        if (finish.equalsIgnoreCase("STOP") || message.getMessageType() == MessageType.USER) {
-            this.finalizeMessageGroup(chatId, groupId);
+        this.messageAggregations.get(uuid).add(message);
+        if (finishReason.equalsIgnoreCase("STOP")) {
+            this.finalizeMessageGroup(chatId, uuid);
         }
     }
 
-    private String toGroupId(String chatId, Message message) {
-        String messageId = getProperty(message, "id");
-        logger.debug("Message id of the message is {}", messageId);
-        return chatId + ":" + messageId;
-    }
-
-    private String getProperty(Message message, String key) {
-        Map<String, Object> properties = message.getProperties();
-        logger.debug("Properties of the message {}", properties);
-        if (properties != null && properties.containsKey(key)) {
-            return (String) properties.get(key);
-        }
-        return "";
-    }
-
-    private void finalizeMessageGroup(String chatId, String groupId) {
-        if (this.messageAggregations.containsKey(groupId)) {
-
-            List<Message> sessionMessages = this.messageAggregations.get(groupId);
-            if (sessionMessages.size() == 1) {
-                this.commitToHistoryLog(chatId, sessionMessages.get(0));
-            }
-            else {
-                String aggregatedContent = sessionMessages.stream()
+    private void finalizeMessageGroup(String chatId, UUID uuid) {
+        if (this.messageAggregations.containsKey(uuid)) {
+            List<Message> assistantSessionMessages = this.messageAggregations.get(uuid);
+                String aggregatedContent = assistantSessionMessages.stream()
                         .filter(m -> m.getContent() != null)
                         .map(Message::getContent).collect(Collectors.joining());
+                logger.info("The assistant message is :: {}", aggregatedContent);
                 this.commitToHistoryLog(chatId, new AssistantMessage(aggregatedContent));
-            }
-            this.messageAggregations.remove(groupId);
+            this.messageAggregations.remove(uuid);
         }
         else {
-            logger.warn("No active session for groupId: " + groupId);
+            logger.warn("No active session for groupId: " + uuid);
         }
     }
 

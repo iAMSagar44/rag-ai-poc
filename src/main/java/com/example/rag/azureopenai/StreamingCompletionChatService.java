@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.UUID.randomUUID;
+
 @Endpoint
 @AnonymousAllowed
 public class StreamingCompletionChatService {
@@ -38,10 +40,10 @@ public class StreamingCompletionChatService {
     private Resource emptyPromptResource;
 
     private final VectorStore vectorStore;
-    private final ChatHistory chatHistory;
+    private final InMemChatHistory chatHistory;
 
     @Autowired
-    public StreamingCompletionChatService(StreamingChatClient chatClient, VectorStore vectorStore, ChatHistory chatHistory) {
+    public StreamingCompletionChatService(StreamingChatClient chatClient, VectorStore vectorStore, InMemChatHistory chatHistory) {
         this.chatClient = chatClient;
         this.vectorStore = vectorStore;
         this.chatHistory = chatHistory;
@@ -51,14 +53,15 @@ public class StreamingCompletionChatService {
         SystemMessage systemMessage = generateSystemMessage(chatId, message);
         //LOGGER.info("The system prompt is -- {}", systemMessage.getContent());
         UserMessage userMessage = new UserMessage(message);
-
-        chatHistory.addMessage(chatId, userMessage);
-
+        chatHistory.addUserMessage(chatId, userMessage);
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+        final var uuid = randomUUID();
         return chatClient.stream(prompt)
                 .map(chatResponse -> {
+                    String finishReason = chatResponse.getResult().getMetadata().getFinishReason();
+                    LOGGER.debug("Tracking finish reason --> {}", finishReason);
                     AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
-                    chatHistory.addMessage(chatId, assistantMessage);
+                    chatHistory.addAssistantMessage(chatId, assistantMessage, finishReason, uuid);
                     return assistantMessage.getContent();
                 })
                 .onBackpressureBuffer()
@@ -75,10 +78,10 @@ public class StreamingCompletionChatService {
         List<Message> messageHistory = chatHistory.getLastN(chatId, CHAT_HISTORY_WINDOW_SIZE);
 
         var history = messageHistory.stream()
-                .map(m -> m.getMessageType().name().toLowerCase() + ": " + m.getContent())
+                .map(m -> m.getMessageType().name().toLowerCase() + " : " + m.getContent())
                 .collect(Collectors.joining(System.lineSeparator()));
 
-        LOGGER.debug("Conversation History so far:: {}", history);
+        LOGGER.info("Conversation History so far:: {}", history);
 
         if(similarDocuments.isEmpty()) {
             SystemPromptTemplate emptyPromptTemplate = new SystemPromptTemplate(this.emptyPromptResource);
