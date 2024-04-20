@@ -3,7 +3,9 @@ import {AppLayout} from "@hilla/react-components/AppLayout";
 import {MessageList, MessageListItem} from "@hilla/react-components/MessageList";
 import {StreamingCompletionChatService} from "Frontend/generated/endpoints.js";
 import { useState } from "react";
+import {nanoid} from "nanoid";
 
+const chatId = nanoid();
 export default function MainView() {
   const [messages, setMessages] = useState<MessageListItem[]>([]);
 
@@ -28,7 +30,7 @@ export default function MainView() {
         });
 
         let first = true;
-        StreamingCompletionChatService.generateResponse(message)
+        StreamingCompletionChatService.generateResponse(chatId, message)
             .onNext(textChunk => {
                 if (first && textChunk) {
                     addMessage({

@@ -5,6 +5,8 @@ import dev.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.StreamingChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -14,7 +16,6 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import reactor.core.publisher.Flux;
 
@@ -27,53 +28,74 @@ import java.util.stream.Collectors;
 @AnonymousAllowed
 public class StreamingCompletionChatService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamingCompletionChatService.class);
-    private final StreamingChatClient azureChatClient;
-    private final VectorStore vectorStore;
+    private final StreamingChatClient chatClient;
+    private static final int CHAT_HISTORY_WINDOW_SIZE = 40;
 
-    @Value("classpath:/prompts/no-info-prompt-template.st")
-    private Resource emptyPromptResource;
     @Value("classpath:/prompts/prompt-template.st")
     private Resource systemPromptResource;
 
+    @Value("classpath:/prompts/no-info-prompt-template.st")
+    private Resource emptyPromptResource;
+
+    private final VectorStore vectorStore;
+    private final ChatHistory chatHistory;
+
     @Autowired
-    public StreamingCompletionChatService(StreamingChatClient azureChatClient, VectorStore vectorStore) {
-        this.azureChatClient = azureChatClient;
+    public StreamingCompletionChatService(StreamingChatClient chatClient, VectorStore vectorStore, ChatHistory chatHistory) {
+        this.chatClient = chatClient;
         this.vectorStore = vectorStore;
+        this.chatHistory = chatHistory;
     }
 
-//    public Flux<String> generateResponse(String message) {
-//        return azureChatClient.stream(new Prompt(message))
-//                .map(chatResponse -> chatResponse.getResult().getOutput().getContent())
-//                .onBackpressureBuffer()
-//                .onErrorComplete();
-//    }
-
-    public Flux<String> generateResponse(String message) {
-        SystemMessage systemMessage = generateSystemMessage(message);
+    public Flux<String> generateResponse(String chatId, String message) {
+        SystemMessage systemMessage = generateSystemMessage(chatId, message);
         //LOGGER.info("The system prompt is -- {}", systemMessage.getContent());
         UserMessage userMessage = new UserMessage(message);
+
+        chatHistory.addMessage(chatId, userMessage);
+
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
-        return azureChatClient.stream(prompt)
-                .map(chatResponse -> chatResponse.getResult().getOutput().getContent())
+        return chatClient.stream(prompt)
+                .map(chatResponse -> {
+                    AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
+                    chatHistory.addMessage(chatId, assistantMessage);
+                    return assistantMessage.getContent();
+                })
                 .onBackpressureBuffer()
                 .onErrorComplete();
     }
 
-    private SystemMessage generateSystemMessage(String message) {
+    private SystemMessage generateSystemMessage(String chatId, String message) {
         LOGGER.info("Retrieving documents");
         List<Document> similarDocuments = vectorStore
                 .similaritySearch(SearchRequest.query(message));
+
         LOGGER.info("Found {} similar documents", similarDocuments.size());
+
+        List<Message> messageHistory = chatHistory.getLastN(chatId, CHAT_HISTORY_WINDOW_SIZE);
+
+        var history = messageHistory.stream()
+                .map(m -> m.getMessageType().name().toLowerCase() + ": " + m.getContent())
+                .collect(Collectors.joining(System.lineSeparator()));
+
+        LOGGER.debug("Conversation History so far:: {}", history);
+
         if(similarDocuments.isEmpty()) {
             SystemPromptTemplate emptyPromptTemplate = new SystemPromptTemplate(this.emptyPromptResource);
             return (SystemMessage) emptyPromptTemplate.createMessage(Map.of("message",
                     String.format("No information found in the documents for the following question - %s", message)));
         }
+
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.systemPromptResource);
-        String documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
+
+        var documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
+
         Set<String> collect = similarDocuments.stream().map(Document::getMetadata).map(m -> (String)m.get("file_name")).collect(Collectors.toSet());
+
         String fileNames = String.join(",", collect);
         //LOGGER.info("The file names are -> {}", fileNames);
-        return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent, "fileNames", fileNames));
+        return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent,
+                "history", history,
+                "fileNames", fileNames));
     }
 }
