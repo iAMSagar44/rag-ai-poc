@@ -57,7 +57,7 @@ public class InMemChatHistory {
                 String aggregatedContent = assistantSessionMessages.stream()
                         .filter(m -> m.getContent() != null)
                         .map(Message::getContent).collect(Collectors.joining());
-                logger.info("The assistant message is :: {}", aggregatedContent);
+                logger.debug("The assistant message is :: {}", aggregatedContent);
                 this.commitToHistoryLog(chatId, new AssistantMessage(aggregatedContent));
             this.messageAggregations.remove(uuid);
         }

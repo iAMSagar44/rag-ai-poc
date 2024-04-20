@@ -81,7 +81,7 @@ public class StreamingCompletionChatService {
                 .map(m -> m.getMessageType().name().toLowerCase() + " : " + m.getContent())
                 .collect(Collectors.joining(System.lineSeparator()));
 
-        LOGGER.info("Conversation History so far:: {}", history);
+        LOGGER.debug("Conversation History so far:: {}", history);
 
         if(similarDocuments.isEmpty()) {
             SystemPromptTemplate emptyPromptTemplate = new SystemPromptTemplate(this.emptyPromptResource);
