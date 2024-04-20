@@ -34,3 +34,7 @@ variable "AZURE_AI_SEARCH_API_KEY" {
 variable "AZURE_AI_SEARCH_ENDPOINT" {
   type = string
 }
+
+variable "AZURE_AI_SEARCH_INDEX_NAME" {
+  type = string
+}

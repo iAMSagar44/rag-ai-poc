@@ -37,6 +37,7 @@ resource "azurerm_linux_web_app" "backendapp" {
     "SPRING_AI_AZURE_OPENAI_ENDPOINT" = var.SPRING_AI_AZURE_OPENAI_ENDPOINT
     "AZURE_AI_SEARCH_API_KEY"         = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv_account_01.name};SecretName=${azurerm_key_vault_secret.kv_secret_02.name})"
     "AZURE_AI_SEARCH_ENDPOINT"        = var.AZURE_AI_SEARCH_ENDPOINT
+    "AZURE_AI_SEARCH_INDEX_NAME" = var.AZURE_AI_SEARCH_INDEX_NAME
   }
   tags = {
     project = "rag"
