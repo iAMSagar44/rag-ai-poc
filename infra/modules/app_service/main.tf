@@ -24,8 +24,8 @@ resource "azurerm_linux_web_app" "backendapp" {
   site_config {
     application_stack {
       java_server         = "JAVA"
-      java_version        = "17"
-      java_server_version = "17"
+      java_version        = "21"
+      java_server_version = "21"
     }
   }
   identity {
