@@ -20,6 +20,6 @@ Technology Stack:
 ## Running the application
 Run the app by running `Application.java` in your IDE or `./mvnw spring-boot:run` in the command line.
 
-## Running
+## Note
 Also exploring other AI models like Open AI and vector databases like PgVector. Also giving Langchain4j a try.
 Please check other branches for their implementations.
