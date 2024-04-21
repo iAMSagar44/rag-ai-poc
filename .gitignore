@@ -32,10 +32,20 @@ build/
 ### VS Code ###
 .vscode/
 
-### App related ###
-README_local.md
-
 # The following files are generated/updated by Hilla
 node_modules/
 frontend/generated/
 vite.generated.ts
+/README_local.md
+src/main/bundles/prod.bundle
+
+# The following files are specific to Terraform scripts
+infra/.terraform.lock.hcl
+infra/main.tfplan
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+infra/*tfplan
+infra/.terraform/providers/registry.terraform.io/hashicorp/azurerm/3.96.0/linux_amd64/terraform-provider-azurerm_v3.96.0_x5
+infra/.terraform/providers/registry.terraform.io/hashicorp/random/3.6.0/linux_amd64/terraform-provider-random_v3.6.0_x5
+/infra/.terraform/
+/infra/env_vars.sh

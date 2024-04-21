@@ -20,7 +20,7 @@ import java.io.IOException;
 public class DataLoadingService {
     private static final Logger logger = LoggerFactory.getLogger(DataLoadingService.class);
 
-    @Value("file://${Home}/Downloads/AZ-204.pdf")
+    @Value("file://${Home}/Downloads/employee_handbook.pdf")
     private Resource pdfResource;
 
     private final VectorStore vectorStore;
@@ -46,7 +46,7 @@ public class DataLoadingService {
 
         var tokenTextSplitter = new TokenTextSplitter();
 
-        logger.info("Parsing document, splitting, creating embeddings and storing in vector store...  this will take a while.");
+        logger.info("Parsing document, splitting, creating embeddings and storing in vector store. This will take a while....");
         this.vectorStore.accept(
                 tokenTextSplitter.apply(
                         pdfReader.get()));
