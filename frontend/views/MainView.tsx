@@ -1,9 +1,11 @@
 import {MessageInput} from "@hilla/react-components/MessageInput";
 import {AppLayout} from "@hilla/react-components/AppLayout";
 import {MessageList, MessageListItem} from "@hilla/react-components/MessageList";
-import {StreamingChatService} from "Frontend/generated/endpoints.js";
+import {StreamingCompletionChatService} from "Frontend/generated/endpoints.js";
 import { useState } from "react";
+import {nanoid} from "nanoid";
 
+const chatId = nanoid();
 export default function MainView() {
   const [messages, setMessages] = useState<MessageListItem[]>([]);
 
@@ -28,7 +30,7 @@ export default function MainView() {
         });
 
         let first = true;
-        StreamingChatService.generateResponse(message)
+        StreamingCompletionChatService.generateResponse(chatId, message)
             .onNext(textChunk => {
                 if (first && textChunk) {
                     addMessage({
@@ -48,7 +50,7 @@ export default function MainView() {
         <AppLayout>
 
                 <header className="flex flex-col gap-m">
-                    <h1 className="text-l m-0">AI Chat 🤖</h1>
+                    <h1 className="text-l m-0">RAG Demo with Azure Open AI and Azure AI Search</h1>
                     <div className="p-m flex flex-col h-full box-border">
                         <MessageList items={messages} className="flex-grow"/>
                         <MessageInput onSubmit={e => sendMessage(e.detail.value)}/>

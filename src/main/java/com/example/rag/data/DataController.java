@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,12 +15,9 @@ public class DataController {
 
     private final DataLoadingService dataLoadingService;
 
-    private final JdbcClient jdbcClient;
-
     @Autowired
-    public DataController(DataLoadingService dataLoadingService, JdbcClient jdbcClient) {
+    public DataController(DataLoadingService dataLoadingService) {
         this.dataLoadingService = dataLoadingService;
-        this.jdbcClient = jdbcClient;
     }
 
     @PostMapping("/load")
@@ -35,21 +30,6 @@ public class DataController {
                     .body("An error occurred while loading data: " + e.getLocalizedMessage());
         }
     }
-
-    @GetMapping("/count")
-    public int count() {
-        String sql = "SELECT COUNT(*) FROM vector_store";
-        Integer count = jdbcClient.sql(sql).query(Integer.class).single();
-        LOGGER.info("The count is :: {}", count);
-        return count;
-    }
-
-    @PostMapping("/delete")
-    public void delete() {
-        String sql = "DELETE FROM vector_store";
-        jdbcClient.sql(sql).update();
-    }
-
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception e) {
