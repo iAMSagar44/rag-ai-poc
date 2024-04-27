@@ -1,8 +1,4 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/vector_store
-    username: postgres
-    password: postgres
   ai:
     openai:
       api-key: ${SPRING_AI_OPENAI_API_KEY}
@@ -15,3 +11,10 @@ spring:
         options:
           temperature: 0.2
           model: gpt-3.5-turbo
+    vectorstore:
+      qdrant:
+        api-key: ${QDRANT_API_KEY}
+        host: ${QDRANT_HOST}
+        collection-name: ${QDRANT_COLLECTION_NAME}
+        use-tls: true
+        port: 6334
