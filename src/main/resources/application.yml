@@ -1,3 +1,22 @@
 spring:
-  profiles:
-    active: dev
+  ai:
+    azure:
+      openai:
+        api-key: ${SPRING_AI_AZURE_OPENAI_API_KEY}
+        endpoint: ${SPRING_AI_AZURE_OPENAI_ENDPOINT}
+        chat:
+          options:
+            deployment-name: azure-rag-search-poc
+        embedding:
+          options:
+            deployment-name: text-embedding-ada-002
+logging:
+  level:
+    reactor.netty.http.client: INFO
+    com.example.rag.azureopenai: INFO
+azure:
+  aisearch:
+    url: ${AZURE_AI_SEARCH_ENDPOINT}
+    api-key: ${AZURE_AI_SEARCH_API_KEY}
+    index-name: ${AZURE_AI_SEARCH_INDEX_NAME}
+    default-top-k: 3

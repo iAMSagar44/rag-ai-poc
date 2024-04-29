@@ -1,5 +1,6 @@
 package com.example.rag.azureopenai;
 
+import com.example.rag.configuration.AzureAISearchVectorStore;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.hilla.Endpoint;
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -39,13 +39,13 @@ public class StreamingCompletionChatService {
     @Value("classpath:/prompts/no-info-prompt-template.st")
     private Resource emptyPromptResource;
 
-    private final VectorStore vectorStore;
+    private final AzureAISearchVectorStore azVectorStore;
     private final InMemChatHistory chatHistory;
 
     @Autowired
-    public StreamingCompletionChatService(StreamingChatClient chatClient, VectorStore vectorStore, InMemChatHistory chatHistory) {
+    public StreamingCompletionChatService(StreamingChatClient chatClient, AzureAISearchVectorStore azVectorStore, InMemChatHistory chatHistory) {
         this.chatClient = chatClient;
-        this.vectorStore = vectorStore;
+        this.azVectorStore = azVectorStore;
         this.chatHistory = chatHistory;
     }
 
@@ -70,7 +70,7 @@ public class StreamingCompletionChatService {
 
     private SystemMessage generateSystemMessage(String chatId, String message) {
         LOGGER.info("Retrieving documents");
-        List<Document> similarDocuments = vectorStore
+        List<Document> similarDocuments = azVectorStore
                 .similaritySearch(SearchRequest.query(message));
 
         LOGGER.info("Found {} similar documents", similarDocuments.size());
@@ -96,7 +96,7 @@ public class StreamingCompletionChatService {
         Set<String> collect = similarDocuments.stream().map(Document::getMetadata).map(m -> (String)m.get("file_name")).collect(Collectors.toSet());
 
         String fileNames = String.join(",", collect);
-        //LOGGER.info("The file names are -> {}", fileNames);
+        LOGGER.debug("The file names are -> {}", fileNames);
         return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent,
                 "history", history,
                 "fileNames", fileNames));
