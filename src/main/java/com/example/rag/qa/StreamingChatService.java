@@ -5,7 +5,6 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.ChatResponse;
 import org.springframework.ai.chat.StreamingChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -20,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import reactor.core.publisher.Flux;
-
+import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,24 +50,28 @@ public class StreamingChatService {
     }
 
     public Flux<String> generateResponse(String chatId, String message) {
-        SystemMessage systemMessage = generateSystemMessage(chatId, message);
+        SystemMessage systemMessage = (SystemMessage) generateSystemMessage(chatId, message).get("systemMessage");
+        String fileNames = (String) generateSystemMessage(chatId, message).get("fileNames");
         //LOGGER.info("The system prompt is -- {}", systemMessage.getContent());
+        LOGGER.debug("The file names are -- {}", fileNames);
         UserMessage userMessage = new UserMessage(message);
 
         chatHistory.addMessage(chatId, userMessage);
 
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
-        return chatClient.stream(prompt)
+        final var responseFlux = chatClient.stream(prompt)
                 .map(chatResponse -> {
                     AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
                     chatHistory.addMessage(chatId, assistantMessage);
                     return assistantMessage.getContent();
                 })
-                .onBackpressureBuffer()
                 .onErrorComplete();
+
+        Mono<String> fileNamesMono = Mono.just("\n \n Files referred to: " + fileNames);
+        return responseFlux.concatWith(fileNamesMono);
     }
 
-    private SystemMessage generateSystemMessage(String chatId, String message) {
+    private Map<String, Object> generateSystemMessage(String chatId, String message) {
         LOGGER.info("Retrieving documents");
         List<Document> similarDocuments = vectorStore
                 .similaritySearch(SearchRequest.query(message));
@@ -85,20 +88,21 @@ public class StreamingChatService {
 
         if(similarDocuments.isEmpty()) {
             SystemPromptTemplate emptyPromptTemplate = new SystemPromptTemplate(this.emptyPromptResource);
-            return (SystemMessage) emptyPromptTemplate.createMessage(Map.of("message",
+            final var templateMessage = emptyPromptTemplate.createMessage(Map.of("message",
                     String.format("No information found in the documents for the following question - %s", message)));
+            return Map.of("systemMessage", templateMessage, "fileNames", Set.of());
         }
 
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(this.systemPromptResource);
 
         var documentContent = similarDocuments.stream().map(Document::getContent).collect(Collectors.joining("\n"));
 
-        Set<String> collect = similarDocuments.stream().map(Document::getMetadata).map(m -> (String)m.get("file_name")).collect(Collectors.toSet());
+        Set<String> fileNames = similarDocuments.stream().map(Document::getMetadata).map(m -> (String)m.get("file_name")).collect(Collectors.toSet());
 
-        String fileNames = String.join(",", collect);
+        String files = String.join(",", fileNames);
         //LOGGER.info("The file names are -> {}", fileNames);
-        return (SystemMessage) systemPromptTemplate.createMessage(Map.of("documents", documentContent,
-                "history", history,
-                "fileNames", fileNames));
+        final var templateMessage = systemPromptTemplate.createMessage(Map.of("documents", documentContent,
+                "history", history));
+        return Map.of("systemMessage", templateMessage, "fileNames", files);
     }
 }
