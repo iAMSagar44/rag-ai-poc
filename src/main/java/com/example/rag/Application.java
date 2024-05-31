@@ -1,7 +1,8 @@
 package com.example.rag;
 
-import org.springframework.ai.chat.StreamingChatClient;
-import org.springframework.ai.embedding.EmbeddingClient;
+
+import org.springframework.ai.chat.model.StreamingChatModel;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,10 +18,10 @@ public class Application {
 
     //Log which implementation of Vector Store, Embedding Client and Chat client is being used
     @Bean
-    ApplicationRunner applicationRunner(StreamingChatClient chatClient, EmbeddingClient embeddingClient, VectorStore vectorStore){
+    ApplicationRunner applicationRunner(StreamingChatModel chatModel, EmbeddingModel embeddingModel, VectorStore vectorStore){
         return args -> {
-            System.out.println("Chat Client: " + chatClient.getClass().getName());
-            System.out.println("Embedding Client: " + embeddingClient.getClass().getName());
+            System.out.println("Chat Client: " + chatModel.getClass().getName());
+            System.out.println("Embedding Client: " + embeddingModel.getClass().getName());
             System.out.println("Vector Store:" + vectorStore.getClass().getName());
         };
     }

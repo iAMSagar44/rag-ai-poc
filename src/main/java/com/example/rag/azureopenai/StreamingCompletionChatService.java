@@ -4,11 +4,11 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.StreamingChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.StreamingChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
@@ -30,7 +30,7 @@ import static java.util.UUID.randomUUID;
 @AnonymousAllowed
 public class StreamingCompletionChatService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamingCompletionChatService.class);
-    private final StreamingChatClient chatClient;
+    private final StreamingChatModel chatModel;
     private static final int CHAT_HISTORY_WINDOW_SIZE = 40;
 
     @Value("classpath:/prompts/prompt-template.st")
@@ -43,8 +43,8 @@ public class StreamingCompletionChatService {
     private final InMemChatHistory chatHistory;
 
     @Autowired
-    public StreamingCompletionChatService(StreamingChatClient chatClient, VectorStore vectorStore, InMemChatHistory chatHistory) {
-        this.chatClient = chatClient;
+    public StreamingCompletionChatService(StreamingChatModel chatClient, VectorStore vectorStore, InMemChatHistory chatHistory) {
+        this.chatModel = chatClient;
         this.vectorStore = vectorStore;
         this.chatHistory = chatHistory;
     }
@@ -56,7 +56,7 @@ public class StreamingCompletionChatService {
         chatHistory.addUserMessage(chatId, userMessage);
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
         final var uuid = randomUUID();
-        return chatClient.stream(prompt)
+        return chatModel.stream(prompt)
                 .map(chatResponse -> {
                     String finishReason = chatResponse.getResult().getMetadata().getFinishReason();
                     LOGGER.debug("Tracking finish reason --> {}", finishReason);
