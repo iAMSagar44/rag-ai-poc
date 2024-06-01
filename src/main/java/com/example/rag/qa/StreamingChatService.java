@@ -5,11 +5,11 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.StreamingChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.StreamingChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @AnonymousAllowed
 public class StreamingChatService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamingChatService.class);
-    private final StreamingChatClient chatClient;
+    private final StreamingChatModel chatModel;
     private static final int CHAT_HISTORY_WINDOW_SIZE = 40;
 
     @Value("classpath:/prompts/prompt-template.st")
@@ -43,8 +43,8 @@ public class StreamingChatService {
     private final ChatHistory chatHistory;
 
     @Autowired
-    public StreamingChatService(StreamingChatClient chatClient, VectorStore vectorStore, ChatHistory chatHistory) {
-        this.chatClient = chatClient;
+    public StreamingChatService(StreamingChatModel chatModel, VectorStore vectorStore, ChatHistory chatHistory) {
+        this.chatModel = chatModel;
         this.vectorStore = vectorStore;
         this.chatHistory = chatHistory;
     }
@@ -59,7 +59,7 @@ public class StreamingChatService {
         chatHistory.addMessage(chatId, userMessage);
 
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
-        final var responseFlux = chatClient.stream(prompt)
+        final var responseFlux = chatModel.stream(prompt)
                 .map(chatResponse -> {
                     AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
                     chatHistory.addMessage(chatId, assistantMessage);

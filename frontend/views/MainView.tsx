@@ -2,6 +2,7 @@ import {MessageInput} from "@hilla/react-components/MessageInput";
 import {AppLayout} from "@hilla/react-components/AppLayout";
 import {MessageList, MessageListItem} from "@hilla/react-components/MessageList";
 import {StreamingChatService} from "Frontend/generated/endpoints.js";
+import {ChatAssistant} from "Frontend/generated/endpoints.js";
 import { useState } from "react";
 import {nanoid} from "nanoid";
 
@@ -30,7 +31,7 @@ export default function MainView() {
         });
 
         let first = true;
-        StreamingChatService.generateResponse(chatId, message)
+        ChatAssistant.generateResponse(chatId, message)
             .onNext(textChunk => {
                 if (first && textChunk) {
                     addMessage({
