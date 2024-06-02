@@ -32,7 +32,7 @@ public class ChatAssistant {
         return chatClient.prompt()
                 .system(systemPromptResource)
                 .advisors(new QuestionAnswerAdvisor(vectorStore, SearchRequest.defaults()))
-                //.advisors(new LoggingAdvisor())
+                .advisors(new LoggingAdvisor())
                 .user(message)
                 .stream()
                 .content();
